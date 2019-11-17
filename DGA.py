@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import heapq
 import pprint
+import math
 
 pp=pprint.PrettyPrinter(indent=4) 
 # =============================================================================
@@ -39,7 +40,7 @@ for i in range(len(ppi)):
         network_of_proteinprotein[protein1].append([1/score,protein2])                                          #calculating inversion score and appending if node is present
     else:
         network_of_proteinprotein[protein1]=[[1/score,protein2]]                                                #calcualting inversion score and creating new node with edge weight as inversion score
-pp.pprint(network_of_proteinprotein)
+#pp.pprint(network_of_proteinprotein)
 def genesymbol_disease():
     genesymbol_disease_mapping={}
     list_of_gene_symbol_from_totaldata = gene_disease[:,1:5]
@@ -61,11 +62,22 @@ def query_protein_disease(query_protein='9606.ENSP00000003084'):
     return gene_symbol_of_query_protein, disease_of_query_protein
 
 def KNN(query_protein,k):  # k ----> No. of neighbouring proteins
+    neighbouring_proteins_name=set()
     neighbouring_proteins=[]
     ppi=network_of_proteinprotein[query_protein]
     heapq.heapify(ppi)
-    for i in range(k):
-        neighbouring_proteins.append(heapq.heappop(ppi))
+    while(len(neighbouring_proteins)<k):
+        nearest_protein=heapq.heappop(ppi)
+        if nearest_protein[1] in neighbouring_proteins_name:
+            continue
+        neighbouring_proteins_name.add(nearest_protein[1])
+        neighbouring_proteins.append(nearest_protein)
+        try:
+            for j in network_of_proteinprotein[nearest_protein[1]]:
+                j[0]+=nearest_protein[0]
+                heapq.heappush(ppi,j)
+        except:
+            continue
     return neighbouring_proteins
 
 def neighbouringprotein_gene_mapping(neighbouring_proteins):
@@ -95,21 +107,61 @@ def jaccard_index(gene1,gene2):
     length_of_gene1,length_of_gene2=len(gene1),len(gene2)
     return length_of_intersection/(length_of_gene1+length_of_gene2)
 
+def simpson_index(gene1,gene2):
+    gene1=set(gene1)
+    gene2=set(gene2)
+    length_of_intersection = len(gene1.intersection(gene2))
+    length_of_gene=min(len(gene1),len(gene2))
+    return length_of_intersection/length_of_gene
+
+def geometric_index(gene1,gene2):
+    gene1=set(gene1)
+    gene2=set(gene2)
+    length_of_intersection = pow(len(gene1.intersection(gene2)),2)
+    length_of_gene1,length_of_gene2=len(gene1),len(gene2)
+    return length_of_intersection/(length_of_gene1*length_of_gene2)
+
+def cosine_index(gene1,gene2):
+    gene1=set(gene1)
+    gene2=set(gene2)
+    length_of_intersection = len(gene1.intersection(gene2))
+    length_of_gene1,length_of_gene2=len(gene1),len(gene2)
+    return length_of_intersection/math.sqrt(length_of_gene1*length_of_gene2)
+    
 def score(query_protein_gene,a,neighbouringprotein_genes,neighbouringprotein_diseases_mapping,D,k):
-    list_of_score_associations = []
+    list_of_score_associations_jaccard = []
+    list_of_score_associations_simpson = []
+    list_of_score_associations_geometric = []
+    list_of_score_associations_cosine = []
     for disease in D:
-        score_disease=0
+        score_disease_jaccard=0
+        score_disease_simpson=0
+        score_disease_geometric=0
+        score_disease_cosine=0
         for j in neighbouringprotein_diseases_mapping.keys():
             if disease in neighbouringprotein_diseases_mapping[j]:
-                score_disease+=jaccard_index(a,neighbouringprotein_diseases_mapping[j])
-        
-        score_disease=(100*score_disease)/k
-        list_of_score_associations.append([query_protein_gene,disease,score_disease])
-    return list_of_score_associations
+                score_disease_jaccard+=jaccard_index(a,neighbouringprotein_diseases_mapping[j])
+                score_disease_simpson+simpson_index(a,neighbouringprotein_diseases_mapping[j])
+                score_disease_geometric+=geometric_index(a,neighbouringprotein_diseases_mapping[j])
+                score_disease_cosine+=cosine_index(a,neighbouringprotein_diseases_mapping[j])
+        score_disease_jaccard=(100*score_disease_jaccard)/k
+        score_disease_simpson=(100*score_disease_simpson)/k
+        score_disease_geometric=(100*score_disease_geometric)/k
+        score_disease_cosine=(100*score_disease_cosine)/k
+        list_of_score_associations_jaccard.append([query_protein_gene,disease,score_disease_jaccard])
+        list_of_score_associations_simpson.append([query_protein_gene,disease,score_disease_simpson])
+        list_of_score_associations_geometric.append([query_protein_gene,disease,score_disease_geometric])
+        list_of_score_associations_cosine.append([query_protein_gene,disease,score_disease_cosine])
+    return list_of_score_associations_jaccard,list_of_score_associations_simpson,list_of_score_associations_geometric,list_of_score_associations_cosine
+
 query_protein = '9606.ENSP00000003084'
 k=6
 neighbouring_proteins = KNN(query_protein,k)
 neighbouringprotein_genes = neighbouringprotein_gene_mapping(neighbouring_proteins)
 neighbouringprotein_diseases_mapping, D = gene_disease_mapping(neighbouringprotein_genes)
 query_protein_gene,a=query_protein_disease()
-pp.pprint(score(query_protein_gene,a,neighbouringprotein_genes,neighbouringprotein_diseases_mapping,D,k))
+list_of_score_associations_jaccard,list_of_score_associations_simpson,list_of_score_associations_geometric,list_of_score_associations_cosine=score(query_protein_gene,a,neighbouringprotein_genes,neighbouringprotein_diseases_mapping,D,k)
+pp.pprint(list_of_score_associations_jaccard)
+pp.pprint(list_of_score_associations_simpson)
+pp.pprint(list_of_score_associations_geometric)
+pp.pprint(list_of_score_associations_cosine)
