@@ -11,15 +11,23 @@ def ten_crossover(values,algorithm,k):
 			else:
 				Working_values[j].append(i)
 
-	ten_percent_mean=0
+	ten_percent_mean_JI=0
+	ten_percent_mean_SI=0
+	ten_percent_mean_GI=0
+	ten_percent_mean_CI=0
 	for i in range(10):
-		accuracy=0
+		accuracy=[0,0,0,0]
 		x = algorithm(Working_values[i],k) # DGA algorithm is run with working_values(modified dataset and choosen k)
 		count_of_values = len(Missing_values[i])
 		for j in x:
 			if j[:2] in Missing_values[i]:
-				accuracy+=j[2]
-		accuracy=accuracy/n # mean of accuracy
-		ten_percent_mean += 0.1*accuracy #contributing to 10% of accuracy as 10 crossover
-
-	return ten_percent_mean
+				for cnt in range(2,6):
+					accuracy[cnt-2]+=j[cnt]
+		for i in range(4):
+			accuracy[i]=accuracy[i]/n   # mean of accuracy
+		ten_percent_mean_JI += 0.1*accuracy[0] #contributing to 10% of accuracy as 10 crossover
+		ten_percent_mean_SI += 0.1*accuracy[1]
+		ten_percent_mean_GI += 0.1*accuracy[2]
+		ten_percent_mean_CI += 0.1*accuracy[3]
+	return [ten_percent_mean_JI,ten_percent_mean_SI,ten_percent_mean_GI,ten_percent_mean_CI]
+	
