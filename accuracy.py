@@ -25,9 +25,9 @@ def ten_crossover(values,algorithm,k):
 					accuracy[cnt-2]+=j[cnt]
 		for i in range(4):
 			accuracy[i]=accuracy[i]/n   # mean of accuracy
-		ten_percent_mean_JI += 0.1*accuracy[0] #contributing to 10% of accuracy as 10 crossover
-		ten_percent_mean_SI += 0.1*accuracy[1]
-		ten_percent_mean_GI += 0.1*accuracy[2]
-		ten_percent_mean_CI += 0.1*accuracy[3]
+		ten_percent_mean_JI += 0.1*accuracy[0] #contributing to 10% of accuracy as 10 crossover for Jaccard Index
+		ten_percent_mean_SI += 0.1*accuracy[1] #contributing to 10% of accuracy as 10 crossover for Simpson Index
+		ten_percent_mean_GI += 0.1*accuracy[2] #contributing to 10% of accuracy as 10 crossover for Geometric Index
+		ten_percent_mean_CI += 0.1*accuracy[3] #contributing to 10% of accuracy as 10 crossover for Cosine Index
 	return [ten_percent_mean_JI,ten_percent_mean_SI,ten_percent_mean_GI,ten_percent_mean_CI]
 	
