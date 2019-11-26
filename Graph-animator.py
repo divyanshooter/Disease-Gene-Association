@@ -20,17 +20,29 @@ plot_bar_x(k_data,auc_data_cosine,3)
 
 index = np.arange(4)
 bar_width = 0.2
-plt.bar(k_data,auc_data_jaccard,bar_width,color='b')
+plt.bar(k_data,auc_data_jaccard,bar_width,color='b',label='Jaccard')
 for i in range(12):
     k_data[i]+=bar_width
-plt.bar(k_data,auc_data_simpson,bar_width,color='g')
+plt.bar(k_data,auc_data_simpson,bar_width,color='g',label='Simpson')
 for i in range(12):
     k_data[i]+=bar_width
-plt.bar(k_data,auc_data_geometric,bar_width,color='r')
+plt.bar(k_data,auc_data_geometric,bar_width,color='r',label='Geometric')
 for i in range(12):
     k_data[i]+=bar_width
-plt.bar(k_data,auc_data_cosine,bar_width,color=(0.2, 0.4, 0.6, 0.6))
+plt.bar(k_data,auc_data_cosine,bar_width,color=(0.2, 0.4, 0.6, 0.6),label='Cosine')
 plt.xlabel('k-data', fontsize=15)
 plt.ylabel('Accuracy of data', fontsize=15)
 plt.title('Indices')
 plt.show()
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+false_positive_values = np.array([0.2,0.35,0.5,0.65,0.8])
+true_positive_values = np.array([0.3,0.59,0.69,0.8,0.75])
+plt.plot(false_positive_values,true_positive_values)
+plt.ylabel('True Positive Values', fontsize=15)
+plt.xlabel('False Positive Values', fontsize=15)
+plt.title('ROC')
+plt.show()
+
